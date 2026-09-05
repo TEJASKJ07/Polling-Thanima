@@ -16,8 +16,10 @@ app.get('/', (req, res) => {
 });
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
-
+const io = new Server(server, {
+    cors: { origin: '*' },
+    transports: ['polling', 'websocket']
+});
 let poll = {
     title: 'Default Poll Title',
     maxVotesPerUser: 1,
