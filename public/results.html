@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Live Poll Results - PulsePoll</title>
+    <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/xXM8L8cR/images.jpg">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    spacing: {
+                        "container-vote-max": "720px",
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="font-body-md min-h-screen flex flex-col selection:bg-yellow-400 selection:text-purple-900"
+    style="background: radial-gradient(circle at 50% 0%, #451b72 0%, #20073b 50%, #110321 100%); background-attachment: fixed; color: rgb(254, 247, 255);">
+
+    <!-- Ambient Background Glows -->
+    <div
+        class="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-purple-600/20 blur-[120px] pointer-events-none rounded-full">
+    </div>
+    <div
+        class="fixed bottom-0 right-0 w-[400px] h-[400px] bg-amber-500/10 blur-[140px] pointer-events-none rounded-full">
+    </div>
+
+    <!-- Top Header with Side-by-Side Logo -->
+    <header class="fixed top-0 w-full z-50 backdrop-blur-xl shadow-lg"
+        style="background: linear-gradient(180deg, rgba(27, 6, 48, 0.85) 0%, rgba(27, 6, 48, 0.4) 100%); border-bottom: 1px solid rgba(253, 223, 158, 0.15);">
+        <div class="h-20 max-w-[1200px] mx-auto px-6 flex items-center justify-between gap-4">
+
+            <!-- Side-by-Side Logo & Branding -->
+            <div class="flex items-center gap-3">
+                <img src="https://i.postimg.cc/Xrdq9qpL/images-removebg-preview.png" alt="Thanima Logo"
+                    class="h-10 w-auto object-contain shrink-0">
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs uppercase tracking-wider font-bold leading-tight"
+                        style="color: rgb(253, 223, 158);">Aksharamuttam</span>
+                    <div class="flex items-center gap-2 leading-none mt-0.5">
+                        <span class="font-bold text-xl tracking-tight"
+                            style="color: rgb(254, 247, 255);">PulsePoll</span>
+                        <span class="hidden sm:inline text-xs text-purple-200/60">Live Platform</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full font-bold text-xs shadow-md"
+                style="background: linear-gradient(135deg, #fddf9e 0%, #f3c267 100%); color: rgb(49, 14, 87);">
+                <span class="w-2 h-2 rounded-full bg-purple-900 animate-pulse"></span>
+                <span class="uppercase tracking-wide">Live Stream Active</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="w-full pt-20 flex-1 flex flex-col">
+        <div
+            class="w-full relative overflow-hidden py-8 px-4 sm:px-6 flex justify-center items-center min-h-[calc(100vh-5rem)]">
+            <div class="w-full max-w-container-vote-max mx-auto relative z-10 flex flex-col gap-6">
+
+                <!-- Results Card -->
+                <section
+                    class="rounded-2xl p-6 sm:p-8 flex flex-col gap-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                    style="background: linear-gradient(145deg, rgba(69, 27, 114, 0.8) 0%, rgba(38, 12, 66, 0.9) 100%); border: 1px solid rgba(253, 223, 158, 0.25);">
+                    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4"
+                        style="border-bottom: 1px solid rgba(253, 223, 158, 0.15);">
+                        <div class="flex flex-col gap-1">
+                            <span class="text-xs uppercase tracking-wider font-bold"
+                                style="color: rgb(253, 223, 158);">Live Standings</span>
+                            <h1 id="pollTitle" class="text-2xl sm:text-3xl font-bold tracking-tight drop-shadow-sm"
+                                style="color: rgb(254, 247, 255);">Loading Results...</h1>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <a href="index.html"
+                                class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold text-xs shadow-md transition-all hover:scale-[1.02]"
+                                style="background: linear-gradient(135deg, #fddf9e 0%, #f3c267 100%); color: rgb(49, 14, 87);">
+                                <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                                <span>Back to Voting</span>
+                            </a>
+                            <div class="flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl shadow-inner"
+                                style="background: rgba(253, 223, 158, 0.12); border: 1px solid rgba(253, 223, 158, 0.3);">
+                                <span class="material-symbols-outlined text-[16px]"
+                                    style="color: rgb(253, 223, 158);">group</span>
+                                <span id="totalVotes" style="color: rgb(253, 223, 158);">Total Votes: 0</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    <!-- Side-by-Side Results Container -->
+                    <div id="resultsContainer" class="flex flex-col gap-4"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-4 text-xs backdrop-blur-md"
+        style="background: rgba(17, 3, 33, 0.8); border-top: 1px solid rgba(253, 223, 158, 0.15); color: rgb(207, 197, 181);">
+        <div class="max-w-[1200px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>© Aksharamuttam PulsePoll. Real-Time Interaction.</span>
+            <div class="flex gap-4">
+                <a href="index.html" class="hover:underline">Voter Portal</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const RAILWAY_URL = "https://polling-thanima-production.up.railway.app";
+        const BACKEND_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port === "3000"
+            ? "http://localhost:3000"
+            : RAILWAY_URL;
+
+        const socket = io(BACKEND_URL, {
+            transports: ['websocket', 'polling']
+        });
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+        socket.on('pollUpdated', (poll) => {
+            document.getElementById('pollTitle').innerText = poll.title;
+            const totalVotes = poll.totalVotes !== undefined ? poll.totalVotes : poll.candidates.reduce((sum, c) => sum + c.votes, 0);
+            document.getElementById('totalVotes').innerText = `Total Votes: ${totalVotes}`;
+
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+
+            poll.candidates.forEach((c, index) => {
+                const letter = letters[index % letters.length];
+                const item = document.createElement('div');
+                const pct = c.percentage !== undefined ? c.percentage : (totalVotes > 0 ? ((c.votes / totalVotes) * 100).toFixed(1) : 0);
+
+                item.className = 'p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 transition-all duration-300';
+                item.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%)';
+                item.style.border = '1px solid rgba(253, 223, 158, 0.18)';
+
+                item.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-[180px] shrink-0">
+                        <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shadow-sm shrink-0" style="background: linear-gradient(135deg, #fddf9e 0%, #f3c267 100%); color: rgb(49, 14, 87);">${letter}</div>
+                        <span class="font-semibold text-base truncate" style="color: rgb(254, 247, 255);">${c.name}</span>
+                    </div>
+                    <div class="flex-1 flex items-center gap-4 w-full">
+                        <div class="w-full h-3.5 rounded-full overflow-hidden shadow-inner flex-1" style="background-color: rgba(255, 255, 255, 0.08);">
+                            <div class="h-full transition-all duration-700 rounded-full shadow-md" style="width: ${pct}%; background: linear-gradient(90deg, #fddf9e 0%, #f3c267 100%);"></div>
+                        </div>
+                        <span class="text-sm font-bold shrink-0 min-w-[95px] text-right" style="color: rgb(253, 223, 158);">${pct}% <span class="text-xs font-normal opacity-80">(${c.votes})</span></span>
+                    </div>
+                `;
+
+                container.appendChild(item);
+            });
+        });
+    </script>
+</body>
+
+</html>

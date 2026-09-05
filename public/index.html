@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Audience Voting - PulsePoll</title>
+    <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/xXM8L8cR/images.jpg">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    spacing: {
+                        "container-vote-max": "640px",
+                    },
+                    fontFamily: {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Space Grotesk"],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="font-body-md min-h-screen flex flex-col selection:bg-yellow-400 selection:text-purple-900"
+    style="background: radial-gradient(circle at 50% 0%, #451b72 0%, #20073b 50%, #110321 100%); background-attachment: fixed; color: rgb(254, 247, 255);">
+
+    <!-- Ambient Background Glows -->
+    <div
+        class="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-purple-600/20 blur-[120px] pointer-events-none rounded-full">
+    </div>
+    <div
+        class="fixed bottom-0 right-0 w-[400px] h-[400px] bg-amber-500/10 blur-[140px] pointer-events-none rounded-full">
+    </div>
+
+    <!-- Top Header -->
+    <header class="fixed top-0 w-full z-50 backdrop-blur-xl shadow-lg"
+        style="background: linear-gradient(180deg, rgba(27, 6, 48, 0.85) 0%, rgba(27, 6, 48, 0.4) 100%); border-bottom: 1px solid rgba(253, 223, 158, 0.15);">
+        <div class="h-20 max-w-[1200px] mx-auto px-6 flex items-center justify-between gap-4">
+
+            <!-- Side-by-Side Logo & Branding -->
+            <div class="flex items-center gap-3">
+                <img src="https://i.postimg.cc/Xrdq9qpL/images-removebg-preview.png" alt="Thanima Logo"
+                    class="h-10 w-auto object-contain shrink-0">
+                <div class="flex flex-col justify-center">
+                    <span class="text-[10px] sm:text-xs uppercase tracking-wider font-bold leading-tight"
+                        style="color: rgb(253, 223, 158);">Aksharamuttam</span>
+                    <div class="flex items-center gap-2 leading-none mt-0.5">
+                        <span class="font-bold text-xl tracking-tight"
+                            style="color: rgb(254, 247, 255);">PulsePoll</span>
+                        <span class="hidden sm:inline text-xs text-purple-200/60">Live Platform</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full font-bold text-xs shadow-md"
+                style="background: linear-gradient(135deg, #fddf9e 0%, #f3c267 100%); color: rgb(49, 14, 87);">
+                <span class="w-2 h-2 rounded-full bg-purple-900 animate-pulse"></span>
+                <span class="uppercase tracking-wide">Live Poll Active</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="w-full pt-20 flex-1 flex flex-col">
+        <div
+            class="w-full relative overflow-hidden py-8 px-4 sm:px-6 flex justify-center items-center min-h-[calc(100vh-5rem)]">
+            <div class="w-full max-w-container-vote-max mx-auto relative z-10 flex flex-col gap-6">
+
+                <!-- Voting Card -->
+                <section
+                    class="rounded-2xl p-6 sm:p-8 flex flex-col gap-6 relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                    style="background: linear-gradient(145deg, rgba(69, 27, 114, 0.8) 0%, rgba(38, 12, 66, 0.9) 100%); border: 1px solid rgba(253, 223, 158, 0.25);">
+                    <header class="flex flex-col gap-1 pb-4"
+                        style="border-bottom: 1px solid rgba(253, 223, 158, 0.15);">
+                        <span class="text-xs uppercase tracking-wider font-bold"
+                            style="color: rgb(253, 223, 158);">Official Ballot</span>
+                        <h1 id="pollTitle" class="text-2xl sm:text-3xl font-bold tracking-tight drop-shadow-sm"
+                            style="color: rgb(254, 247, 255);">Loading Poll...</h1>
+                        <p id="subTitle" class="text-sm" style="color: rgb(231, 224, 235);">Select your candidate below.
+                        </p>
+                    </header>
+
+                    <!-- Candidate Options Container -->
+                    <div id="optionsContainer" class="flex flex-col gap-3"></div>
+
+                    <!-- Submit CTA -->
+                    <div class="flex flex-col gap-2 pt-2">
+                        <button id="btnSubmit" onclick="submitVote()" disabled
+                            class="w-full py-3.5 px-6 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 cursor-not-allowed opacity-50 shadow-md"
+                            style="background: linear-gradient(135deg, #fddf9e 0%, #f3c267 100%); color: rgb(49, 14, 87);">
+                            <span class="material-symbols-outlined text-[20px]">how_to_vote</span>
+                            <span>Cast Locked Vote</span>
+                        </button>
+                        <div class="flex items-center justify-between px-1 text-xs" style="color: rgb(231, 224, 235);">
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]"
+                                    style="color: rgb(253, 223, 158);">verified_user</span>
+                                Anonymous Ballot
+                            </span>
+                            <span id="submissionTip">Select an option</span>
+                        </div>
+                    </div>
+
+                    <!-- Success Overlay -->
+                    <div id="confirmationBanner"
+                        class="hidden absolute inset-0 rounded-2xl p-8 flex-col items-center justify-center text-center gap-4 z-20 backdrop-blur-md"
+                        style="background: linear-gradient(160deg, rgba(38, 12, 66, 0.98) 0%, rgba(20, 5, 38, 0.98) 100%); border: 1px solid rgba(253, 223, 158, 0.3);">
+                        <div class="w-16 h-16 rounded-full flex items-center justify-center shadow-lg"
+                            style="background: linear-gradient(135deg, #fddf9e 0%, #f3c267 100%); color: rgb(49, 14, 87);">
+                            <span class="material-symbols-outlined text-[36px]">check_circle</span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-2xl font-bold">Vote Verified!</span>
+                            <p class="text-sm max-w-xs mx-auto text-purple-200/80">
+                                Your response has been synchronized into the master tally.
+                            </p>
+                        </div>
+                        <a href="results.html"
+                            class="w-full max-w-xs py-2.5 px-4 rounded-xl font-bold text-center shadow-md transition-all hover:scale-[1.02]"
+                            style="background: linear-gradient(135deg, #fddf9e 0%, #f3c267 100%); color: rgb(49, 14, 87);">
+                            View Live Streamed Results
+                        </a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-4 text-xs backdrop-blur-md"
+        style="background: rgba(17, 3, 33, 0.8); border-top: 1px solid rgba(253, 223, 158, 0.15); color: rgb(207, 197, 181);">
+        <div class="max-w-[1200px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>© Aksharamuttam PulsePoll. Real-Time Interaction.</span>
+            <div class="flex gap-4">
+                <a href="index.html" class="hover:underline">Voter Portal</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const RAILWAY_URL = "https://polling-thanima-production.up.railway.app";
+        const BACKEND_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port === "3000"
+            ? "http://localhost:3000"
+            : RAILWAY_URL;
+
+        const socket = io(BACKEND_URL, {
+            transports: ['websocket', 'polling']
+        });
+
+        let currentPoll = null;
+        let selectedCandidateIds = [];
+
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+        socket.on('pollUpdated', (poll) => {
+            currentPoll = poll;
+            selectedCandidateIds = [];
+            updateSubmitButton();
+
+            document.getElementById('pollTitle').innerText = poll.title;
+            document.getElementById('subTitle').innerText = `Select up to ${poll.maxVotesPerUser} candidate(s)`;
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            poll.candidates.forEach((c, index) => {
+                const letter = letters[index % letters.length];
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option-card group cursor-pointer transition-all duration-200 rounded-xl p-4 flex items-center justify-between select-none hover:border-amber-200/50 hover:shadow-lg';
+                optionDiv.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%)';
+                optionDiv.style.border = '1px solid rgba(253, 223, 158, 0.18)';
+                optionDiv.dataset.id = c.id;
+
+                optionDiv.innerHTML = `
+                    <div class="flex items-center gap-4 min-w-0">
+                        <div class="badge-indicator flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm" style="background: linear-gradient(135deg, #fddf9e 0%, #f3c267 100%); color: rgb(49, 14, 87);">
+                            ${letter}
+                        </div>
+                        <span class="font-semibold text-lg truncate" style="color: rgb(254, 247, 255);">${c.name}</span>
+                    </div>
+                    <div class="check-indicator w-6 h-6 rounded-full flex items-center justify-center border border-purple-400/30 transition-all">
+                        <span class="material-symbols-outlined text-[16px] hidden">check</span>
+                    </div>
+                `;
+
+                optionDiv.addEventListener('click', () => toggleOption(c.id, optionDiv));
+                container.appendChild(optionDiv);
+            });
+        });
+
+        function toggleOption(candidateId, element) {
+            const max = currentPoll.maxVotesPerUser;
+            const index = selectedCandidateIds.indexOf(candidateId);
+
+            if (index > -1) {
+                selectedCandidateIds.splice(index, 1);
+            } else {
+                if (max === 1) {
+                    selectedCandidateIds = [candidateId];
+                } else if (selectedCandidateIds.length < max) {
+                    selectedCandidateIds.push(candidateId);
+                } else {
+                    alert(`You can only select up to ${max} options.`);
+                    return;
+                }
+            }
+
+            document.querySelectorAll('.option-card').forEach(card => {
+                const cId = parseInt(card.dataset.id);
+                const isSelected = selectedCandidateIds.includes(cId);
+                const checkIcon = card.querySelector('.check-indicator span');
+                const checkCircle = card.querySelector('.check-indicator');
+
+                if (isSelected) {
+                    card.style.background = 'linear-gradient(135deg, rgba(253, 223, 158, 0.25) 0%, rgba(253, 223, 158, 0.08) 100%)';
+                    card.style.borderColor = 'rgb(253, 223, 158)';
+                    checkCircle.style.background = 'linear-gradient(135deg, #fddf9e 0%, #f3c267 100%)';
+                    checkCircle.style.color = 'rgb(49, 14, 87)';
+                    checkIcon.classList.remove('hidden');
+                } else {
+                    card.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%)';
+                    card.style.borderColor = 'rgba(253, 223, 158, 0.18)';
+                    checkCircle.style.background = 'transparent';
+                    checkIcon.classList.add('hidden');
+                }
+            });
+
+            updateSubmitButton();
+        }
+
+        function updateSubmitButton() {
+            const btn = document.getElementById('btnSubmit');
+            const tip = document.getElementById('submissionTip');
+
+            if (selectedCandidateIds.length > 0) {
+                btn.disabled = false;
+                btn.classList.remove('cursor-not-allowed', 'opacity-50');
+                btn.classList.add('cursor-pointer', 'hover:scale-[1.01]', 'hover:shadow-amber-500/20');
+                tip.innerText = `${selectedCandidateIds.length} candidate(s) selected`;
+            } else {
+                btn.disabled = true;
+                btn.classList.add('cursor-not-allowed', 'opacity-50');
+                btn.classList.remove('cursor-pointer', 'hover:scale-[1.01]', 'hover:shadow-amber-500/20');
+                tip.innerText = 'Select an option';
+            }
+        }
+
+        function submitVote() {
+            if (selectedCandidateIds.length === 0) return;
+            socket.emit('submitVote', selectedCandidateIds);
+        }
+
+        socket.on('voteSuccess', () => {
+            document.getElementById('confirmationBanner').classList.remove('hidden');
+            document.getElementById('confirmationBanner').classList.add('flex');
+        });
+
+        socket.on('voteError', (msg) => {
+            alert(msg);
+        });
+    </script>
+</body>
+
+</html>
