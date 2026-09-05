@@ -17,7 +17,10 @@ app.get('/', (req, res) => {
 
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: { origin: '*' },
+    cors: {
+        origin: "*", // Allows requests from Vercel or any client domain
+        methods: ["GET", "POST"]
+    },
     transports: ['polling', 'websocket']
 });
 let poll = {
