@@ -121,8 +121,8 @@
     <script>
         const BACKEND_URL = window.location.origin;
 
-        const socket = io(BACKEND_URL, {
-            transports: ['websocket', 'polling']
+        const socket = io("https://polling-thanima-1.onrender.com", {
+            transports: ['polling', 'websocket']
         });
         const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 

@@ -13,6 +13,7 @@
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+
 </head>
 
 <body class="min-h-screen flex flex-col font-sans selection:bg-yellow-400 selection:text-purple-900"
@@ -131,8 +132,8 @@
     <script>
         const BACKEND_URL = window.location.origin;
 
-        const socket = io(BACKEND_URL, {
-            transports: ['websocket', 'polling']
+        const socket = io("https://polling-thanima-1.onrender.com", {
+            transports: ['polling', 'websocket']
         });
 
         function handleLogin(e) {
